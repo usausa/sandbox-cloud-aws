@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="AGENTS.md" />
+    <File Path="Analyzers.ruleset" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="TenantApi.sln.DotSettings" />
+  </Folder>
+  <Project Path="TenantApi.Server/TenantApi.Server.csproj" Id="894c67f5-8168-4c57-8fc0-2d9489dce200" />
+  <Project Path="TenantApi.IaC/TenantApi.IaC.csproj" />
+  <Project Path="TenantApi.TestClient/TenantApi.TestClient.csproj" Id="c02c7d5a-445d-48c8-a09b-4613ce76c3d1" />
+</Solution>

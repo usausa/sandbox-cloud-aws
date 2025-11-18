@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Serverless.IaC</RootNamespace>
+    <AssemblyName>Serverless.IaC</AssemblyName>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CA1812;CA1303;CA1014;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.CDK.Lib" Version="2.252.0" />
+    <PackageReference Include="Constructs" Version="10.6.0" />
+  </ItemGroup>
+
+</Project>
