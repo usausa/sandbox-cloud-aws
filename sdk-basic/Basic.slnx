@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="AGENTS.md" />
+    <File Path="Analyzers.ruleset" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="Serverless.sln.DotSettings" />
+  </Folder>
+  <Project Path="Basic.Client/Basic.Client.csproj" Id="431d0e68-67f8-423d-8b78-8ab8f5a6937e" />
+  <Project Path="Basic.IaC/src/BasicIaC/Basic.IaC.csproj" />
+</Solution>
