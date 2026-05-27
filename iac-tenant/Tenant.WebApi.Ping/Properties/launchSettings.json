@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Tenant.WebApi.Ping": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:32598;http://localhost:32600"
+    }
+  }
+}

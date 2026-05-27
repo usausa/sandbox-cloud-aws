@@ -1,6 +1,7 @@
-# sdk-basic — Aurora Serverless Sample
+# Tenant IaC — マルチテナント Web API 基盤
 
-Aurora Serverless v2 (PostgreSQL) を AWS CDK でデプロイし、.NET クライアントから操作するサンプルです。
+AWS CDK (C# .NET 10) によるマルチテナント Web API 基盤の IaC プロジェクト群。
+フル版 (Cognito + API Gateway + ECS + Aurora) と簡易版 (API Gateway + ECS Ping) の 2 プロジェクトを提供する。
 
 ---
 
@@ -8,163 +9,110 @@ Aurora Serverless v2 (PostgreSQL) を AWS CDK でデプロイし、.NET クラ�
 
 | プロジェクト | 内容 |
 |---|---|
-| `Basic.IaC` | AWS CDK (C#) — Aurora Serverless v2 インフラ定義 |
-| `Basic.Client` | CLI ツール — Aurora への接続確認・RDS クラスター操作 |
+| `Tenant.IaC` | フル版 IaC — Cognito + API Gateway + ECS + Aurora Serverless v2 |
+| `Tenant.IaC.Minimal` | 簡易版 IaC — API Gateway + ECS (Ping API) |
+| `Tenant.WebApi` | フル版 ECS タスクで動作する Web API (ASP.NET Core) |
+| `Tenant.WebApi.Ping` | 簡易版 ECS タスクで動作する Ping API |
 
 ---
 
-## Basic.IaC — インフラのデプロイ
+## アーキテクチャ
 
-### 前提条件
+### フル版 (Tenant.IaC)
 
-- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) がインストール済みで `aws configure` 設定済み
-- [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/cli.html) がインストール済み (`npm install -g aws-cdk`)
+```
+                ┌────────────────────────┐
+                │  Cognito User Pool     │
+                │  - custom:tenantId     │
+                │  - Pre Token Gen V2    │
+                └────────────┬───────────┘
+                             │ JWT (TenantId 入り)
+                             ▼
+  ┌──────────┐     ┌─────────────────────┐     ┌──────────────┐
+  │ Client   │────▶│ API Gateway HTTP API│────▶│ Public ALB   │
+  └──────────┘     │ JWT Authorizer      │     └───────┬──────┘
+                   └─────────────────────┘             │
+                                                       ▼
+                                               ┌──────────────┐
+                                               │ ECS Fargate  │
+                                               │ Public Subnet│
+                                               │ Spot, 1 task │
+                                               └───────┬──────┘
+                                                       │
+                                                       ▼
+                                               ┌──────────────┐
+                                               │ Aurora Srv v2│
+                                               │ Private(Iso) │
+                                               │ 0.5-1 ACU    │
+                                               └──────────────┘
+```
+
+### 簡易版 (Tenant.IaC.Minimal)
+
+```
+  ┌──────────┐     ┌─────────────────────┐     ┌───────────────┐
+  │ Client   │────▶│ API Gateway HTTP API│────▶│ Public ALB    │
+  └──────────┘     │ (認証なし)          │     └───────┬───────┘
+                   └─────────────────────┘             │
+                                                       ▼
+                                               ┌──────────────┐
+                                               │ ECS Fargate  │
+                                               │ Spot, 1 task │
+                                               │ Ping API     │
+                                               └──────────────┘
+```
+
+---
+
+## 前提ツール
+
+- [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) + `aws configure`
+- [AWS CDK CLI](https://docs.aws.amazon.com/cdk/v2/guide/cli.html): `npm install -g aws-cdk`
 - .NET 10 SDK
+- Docker Desktop
+- PowerShell 7+
 
-### 環境変数
+---
 
-| 変数 | 必須 | 説明 | デフォルト |
-|---|---|---|---|
-| `DB_PASSWORD` | **必須** | DB 管理者パスワード | — |
-| `DB_USERNAME` | 任意 | DB 管理者ユーザー名 | `dbadmin` |
-| `DB_NAME` | 任意 | デフォルトデータベース名 | `appdb` |
+## クイックスタート
 
-### デプロイ手順
+### フル版デプロイ
 
 ```powershell
-# 環境変数をセット
-$env:DB_PASSWORD = "your-secure-password"
-$env:DB_USERNAME = "dbadmin"   # 省略可
-$env:DB_NAME     = "appdb"     # 省略可
-
-cd Basic.IaC
-
-# 初回のみ CDK bootstrap が必要
+cd Tenant.IaC
 cdk bootstrap
+cdk deploy --all
+../scripts/ecr-push.ps1
+aws ecs update-service --cluster tenant-cluster --service tenant-webapi-service --force-new-deployment --region ap-northeast-1
+```
 
-# デプロイ
+### 簡易版デプロイ
+
+```powershell
+cd Tenant.IaC.Minimal
+cdk bootstrap
 cdk deploy
-```
-
-デプロイ完了後、出力に `ClusterEndpoint` (Aurora エンドポイント) が表示されます。
-
-### 削除
-
-```powershell
-cd Basic.IaC
-cdk destroy
+../scripts/ecr-push-ping.ps1
+aws ecs update-service --cluster tenant-ping-cluster --service tenant-ping-service --force-new-deployment --region ap-northeast-1
+curl <ApiEndpoint>/ping
 ```
 
 ---
 
-## Basic.Client — CLI ツール
+## 詳細ドキュメント
 
-Aurora Serverless への接続確認と RDS クラスター操作を行う CLI ツールです。
-
-### 前提条件
-
-- .NET 10 SDK
-- AWS 認証情報が設定済み (`aws configure` または環境変数 `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`)
-
-### 環境変数
-
-| 変数 | 必須 | 説明 | デフォルト |
-|---|---|---|---|
-| `DB_HOST` | 任意 | Aurora クラスターエンドポイント | `localhost` |
-| `DB_USERNAME` | 任意 | DB ユーザー名 | `dbadmin` |
-| `DB_PASSWORD` | 任意 | DB パスワード | (空文字) |
-| `DB_NAME` | 任意 | データベース名 | `appdb` |
-| `AWS_DEFAULT_REGION` | 任意 | AWS リージョン | `ap-northeast-1` |
-
-### ビルドと実行
-
-```powershell
-cd Basic.Client
-dotnet build
-dotnet run -- <command> [options]
-```
-
-### コマンド一覧
-
-#### `connect` — Npgsql で Aurora に接続
-
-Npgsql を直接使用して Aurora Serverless に接続し、サーバーバージョンを確認します。
-
-```powershell
-dotnet run -- connect [options]
-# オプション
-#   --host      Aurora エンドポイント (既定: DB_HOST 環境変数)
-#   --port      ポート番号             (既定: 5432)
-#   --user      ユーザー名             (既定: DB_USERNAME 環境変数)
-#   --password  パスワード             (既定: DB_PASSWORD 環境変数)
-#   --database  データベース名         (既定: DB_NAME 環境変数)
-
-# 実行例
-$env:DB_HOST     = "your-cluster.cluster-xxxx.ap-northeast-1.rds.amazonaws.com"
-$env:DB_PASSWORD = "your-secure-password"
-dotnet run -- connect
-```
-
-#### `connect2` — AWS Advanced .NET Data Provider Wrapper で接続
-
-[AWS Advanced .NET Data Provider Wrapper](https://github.com/aws/aws-advanced-dotnet-wrapper) を使用して接続します。フェイルオーバー対応などの拡張機能を利用できます。
-
-```powershell
-dotnet run -- connect2 [options]
-# オプションは connect と同じ
-```
-
-#### `list` — クラスター一覧とステータス表示
-
-AWS SDK を使用して Aurora DB クラスターとインスタンスの一覧・ステータスを表示します。
-
-```powershell
-dotnet run -- list [--region <region>]
-
-# 実行例
-dotnet run -- list --region ap-northeast-1
-```
-
-出力例:
-```
-Cluster: basiciacstack-auroracluster...  Status: available  Engine: aurora-postgresql 16.6
-  Instance: basiciacstack-writer...  Role: Writer  Status: available
-```
-
-#### `down` — クラスター停止
-
-Aurora DB クラスターを停止します。
-
-```powershell
-dotnet run -- down --cluster-id <cluster-identifier> [--region <region>]
-
-# 実行例
-dotnet run -- down --cluster-id basiciacstack-auroracluster-xxxx
-```
-
-#### `up` — クラスター起動
-
-停止中の Aurora DB クラスターを起動します。
-
-```powershell
-dotnet run -- up --cluster-id <cluster-identifier> [--region <region>]
-
-# 実行例
-dotnet run -- up --cluster-id basiciacstack-auroracluster-xxxx
-```
+- [Tenant.IaC README](Tenant.IaC/README.md) — フル版の詳細仕様・デプロイ手順
+- [Tenant.IaC.Minimal README](Tenant.IaC.Minimal/README.md) — 簡易版の詳細仕様
+- [__docs/実装指示書.md](__docs/実装指示書.md) — 実装仕様書
+- [lambda/pre-token-generation/README.md](lambda/pre-token-generation/README.md) — Lambda 関数仕様
 
 ---
 
-## Aurora Serverless v2 構成詳細
+## コスト目安 (ap-northeast-1、24/7 稼働)
 
-| 項目 | 設定値 |
-|---|---|
-| エンジン | Aurora PostgreSQL 16.6 |
-| インスタンス | Serverless v2 Writer のみ |
-| ACU | 最小 0.5 〜 最大 1 |
-| ネットワーク | パブリックサブネット (NAT なし) |
-| ポート | 5432 (全 IP 許可) |
-| ストレージ暗号化 | 無効 |
-| Performance Insights | 無効 |
-| CloudWatch ログ保持 | 1週間 |
-| 削除保護 | 無効 |
+| 構成 | 月額目安 |
+|------|---------|
+| フル版 (Aurora + Fargate Spot + ALB + API GW + Cognito) | ~$65 |
+| 簡易版 (Fargate Spot + ALB + API GW) | ~$20 |
+
+> Aurora が最大コスト (~$43/月)。停止可能。

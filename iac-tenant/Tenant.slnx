@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="Tenant.IaC/Tenant.IaC.csproj" />
+  <Project Path="Tenant.WebApi/Tenant.WebApi.csproj" />
+  <Project Path="Tenant.WebApi.Ping/Tenant.WebApi.Ping.csproj" />
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="AGENTS.md" />
@@ -9,5 +12,10 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
     <File Path="Serverless.sln.DotSettings" />
+    <File Path="__docs/実装指示書.md" />
+    <File Path="__docs/todo.md" />
+    <File Path="scripts/ecr-push.ps1" />
+    <File Path="scripts/ecr-push-ping.ps1" />
+    <File Path="lambda/pre-token-generation/index.mjs" />
   </Folder>
 </Solution>
