@@ -10,4 +10,6 @@
     <File Path="README.md" />
     <File Path="Serverless.sln.DotSettings" />
   </Folder>
+  <Project Path="Serverless.IaC.Minimal/Serverless.IaC.Minimal.csproj" />
+  <Project Path="Serverless.IaC/Serverless.IaC.csproj" />
 </Solution>
