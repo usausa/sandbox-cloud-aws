@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 
 # Copy repo-level build configuration so analyzers/props apply identically.
-COPY Directory.Build.props Directory.Build.targets Analyzers.ruleset ./
+COPY Directory.Build.props Directory.Build.targets .globalconfig ./
 COPY TenantApi.Server/ ./TenantApi.Server/
 
 WORKDIR /src/TenantApi.Server
