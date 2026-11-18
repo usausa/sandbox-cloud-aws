@@ -31,19 +31,19 @@ public static class CommandBuilderExtensions
 [Command("connect", "Connect to Aurora Serverless via Npgsql and run a test query")]
 public sealed class ConnectCommand : ICommandHandler
 {
-    [Option("--host", "Aurora cluster endpoint host")]
+    [Option("--host", Description = "Aurora cluster endpoint host")]
     public string Host { get; set; } = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
 
-    [Option("--port", "PostgreSQL port")]
+    [Option("--port", Description = "PostgreSQL port")]
     public int Port { get; set; } = 5432;
 
-    [Option("--user", "Database user")]
+    [Option("--user", Description = "Database user")]
     public string User { get; set; } = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "dbadmin";
 
-    [Option("--password", "Database password")]
+    [Option("--password", Description = "Database password")]
     public string Password { get; set; } = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? string.Empty;
 
-    [Option("--database", "Database name")]
+    [Option("--database", Description = "Database name")]
     public string Database { get; set; } = Environment.GetEnvironmentVariable("DB_NAME") ?? "appdb";
 
     public async ValueTask ExecuteAsync(CommandContext context)
@@ -76,19 +76,19 @@ public sealed class ConnectCommand : ICommandHandler
 [Command("connect2", "Connect to Aurora Serverless via AWS Advanced .NET Data Provider Wrapper")]
 public sealed class Connect2Command : ICommandHandler
 {
-    [Option("--host", "Aurora cluster endpoint host")]
+    [Option("--host", Description = "Aurora cluster endpoint host")]
     public string Host { get; set; } = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
 
-    [Option("--port", "PostgreSQL port")]
+    [Option("--port", Description = "PostgreSQL port")]
     public int Port { get; set; } = 5432;
 
-    [Option("--user", "Database user")]
+    [Option("--user", Description = "Database user")]
     public string User { get; set; } = Environment.GetEnvironmentVariable("DB_USERNAME") ?? "dbadmin";
 
-    [Option("--password", "Database password")]
+    [Option("--password", Description = "Database password")]
     public string Password { get; set; } = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? string.Empty;
 
-    [Option("--database", "Database name")]
+    [Option("--database", Description = "Database name")]
     public string Database { get; set; } = Environment.GetEnvironmentVariable("DB_NAME") ?? "appdb";
 
     public async ValueTask ExecuteAsync(CommandContext context)
@@ -123,7 +123,7 @@ public sealed class Connect2Command : ICommandHandler
 [Command("list", "List Aurora DB clusters and their instance statuses")]
 public sealed class ListCommand : ICommandHandler
 {
-    [Option("--region", "AWS region")]
+    [Option("--region", Description = "AWS region")]
     public string Region { get; set; } = Environment.GetEnvironmentVariable("AWS_DEFAULT_REGION") ?? "ap-northeast-1";
 
     public async ValueTask ExecuteAsync(CommandContext context)
@@ -163,10 +163,10 @@ public sealed class ListCommand : ICommandHandler
 [Command("down", "Stop an Aurora DB cluster")]
 public sealed class DownCommand : ICommandHandler
 {
-    [Option("--cluster-id", "DB cluster identifier to stop")]
+    [Option("--cluster-id", Description = "DB cluster identifier to stop")]
     public string ClusterId { get; set; } = string.Empty;
 
-    [Option("--region", "AWS region")]
+    [Option("--region", Description = "AWS region")]
     public string Region { get; set; } = Environment.GetEnvironmentVariable("AWS_DEFAULT_REGION") ?? "ap-northeast-1";
 
     public async ValueTask ExecuteAsync(CommandContext context)
@@ -185,10 +185,10 @@ public sealed class DownCommand : ICommandHandler
 [Command("up", "Start an Aurora DB cluster")]
 public sealed class UpCommand : ICommandHandler
 {
-    [Option("--cluster-id", "DB cluster identifier to start")]
+    [Option("--cluster-id", Description = "DB cluster identifier to start")]
     public string ClusterId { get; set; } = string.Empty;
 
-    [Option("--region", "AWS region")]
+    [Option("--region", Description = "AWS region")]
     public string Region { get; set; } = Environment.GetEnvironmentVariable("AWS_DEFAULT_REGION") ?? "ap-northeast-1";
 
     public async ValueTask ExecuteAsync(CommandContext context)
